@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 
 def plot_hyper(value, loss, name, work_dir):
     plt.figure()
-    plt.plot(value, loss)
+    plt.scatter(value, loss)
     plt.title(f'{name}')
     plt.savefig(f'{work_dir}/{name}.png')
+    plt.close()
         
 def plot_hyper_dict(dic, loss, work_dir):
     keys = dic.keys()

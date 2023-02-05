@@ -2,7 +2,6 @@ import os
 import torch
 from torch import nn, optim
 import matplotlib.pyplot as plt
-import hyperopt
 from hyperopt import hp, fmin, tpe, Trials, STATUS_OK
 
 import dlframe.infrastructure.pytorch_utils as ptu
@@ -45,7 +44,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
     eval_loss_list = []
     train_acc_list = []
     train_loss_list = []
-    print('.............start training.............')
+    # print('.............start training.............')
     for epoch in range(epoches):
         train_loss = 0
         for input, target in train_dataloader:
@@ -57,7 +56,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
-        print(f'epoch[{epoch}]: loss={train_loss:.6f}')
+        # print(f'epoch[{epoch}]: loss={train_loss:.6f}')
         eval_loss = check_loss(eval_dataloader, model, criterion)
         eval_acc = check_acc(eval_dataloader, model)
         train_acc = check_acc(train_dataloader, model)
@@ -68,6 +67,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
         
     if plot:
         step = range(epoches)
+        plt.figure()
         plt.plot(step, train_acc_list, 'r')
         plt.plot(step, eval_acc_list, 'b')
         plt.xlabel('epoches')
@@ -75,6 +75,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
         plt.title('accuracy curve')
         plt.legend(['train acc', 'eval acc'])
         plt.savefig(f'{log_dir}/acc.png')
+        plt.close()
         plt.figure()
         plt.plot(step, train_loss_list, 'r')
         plt.plot(step, eval_loss_list, 'b')
@@ -83,14 +84,19 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
         plt.title('loss curve')
         plt.legend(['train loss', 'eval loss'])
         plt.savefig(f'{log_dir}/loss.png')
+        plt.close()
+
         
     if savemodel:
         torch.save(model.state_dict(), f'{log_dir}/model.pt')
 
 def search_hyperparameter(criterion, train_dataloader, eval_dataloader, params, work_dir):
     
+    if not os.path.exists(work_dir):
+        os.mkdir(work_dir)
+    
     space = {
-        
+        'learning_rate': hp.uniform('learning_rate', 8e-3, 2e-2)
     }
     
     def fit(p):
@@ -100,7 +106,7 @@ def search_hyperparameter(criterion, train_dataloader, eval_dataloader, params, 
         beta2 = p.get('beta2', params['beta2'])
         weight_decay = p.get('weight_decay', params['weight_decay'])
         
-        model = MLP([93, 64, 32, 16, 1], 5)
+        model = MLP([93, 64, 32, 16, 1], 5).to(device=ptu.device)
 
         optimizer = optim.Adam(
             model.parameters(),
@@ -110,7 +116,7 @@ def search_hyperparameter(criterion, train_dataloader, eval_dataloader, params, 
             weight_decay=weight_decay
         )
         
-        train(params['epoches'], train_dataloader, eval_dataloader, model, optimizer, criterion, f'{work_dir}'/{dict_to_str(p)})
+        train(params['epoches'], train_dataloader, eval_dataloader, model, optimizer, criterion, f'{work_dir}/{dict_to_str(p)}')
         
         return {'loss': check_loss(eval_dataloader, model, criterion), 'status': STATUS_OK}
     
@@ -120,8 +126,8 @@ def search_hyperparameter(criterion, train_dataloader, eval_dataloader, params, 
         fn=fit,
         space=space,
         algo=tpe.suggest,
-        max_evals=100,
+        max_evals=params['max_evals'],
         trials=trials
     )
     
-    plot_hyper_dict(trials.vals, trials.losses())
+    plot_hyper_dict(trials.vals, trials.losses(), work_dir)
