@@ -1,4 +1,4 @@
-# The Frame for deepleaning.
+# A frame for deepleaning.
 
 ```
 $ git clone https://github.com/chengwym/DLFrame.git
