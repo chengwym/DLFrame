@@ -18,4 +18,5 @@ def read_csv(path, mode):
         data = ptu.from_numpy(train_df.iloc[:, :-1].values)
         target = ptu.from_numpy(train_df.iloc[:, -1].values)
     data = (data-data.mean())/data.std()
+    target = target.reshape(-1, 1)
     return data, target

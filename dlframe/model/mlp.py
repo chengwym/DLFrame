@@ -12,7 +12,6 @@ class MLP(nn.Module):
         for i in range(hidden_layers_nums-1):
             layers.append(nn.Linear(layers_dim[i], layers_dim[i+1]))
             layers.append(nn.GELU())
-        layers.append(nn.Linear(layers_dim[-2], layers_dim[-1]))
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
