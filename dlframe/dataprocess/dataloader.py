@@ -1,9 +1,10 @@
 from torch.utils.data import DataLoader, Dataset
 
-class Cheng_Dataset(Dataset):
+class DiyDataset(Dataset):
     def __init__(
         self,
-        mode
+        mode,
+        path
     ):
         self.mode = mode
         if mode=='test':
@@ -16,13 +17,16 @@ class Cheng_Dataset(Dataset):
             raise ValueError(f'The mode {mode} is uncorrect. It should be test, train, or eval')
     
     def __getitem__(self, index):
-        pass
+        if self.mode == 'test':
+            return self.data[index]
+        else:
+            return self.data[index], self.target[index]
     
     def __len__(self):
-        pass
+        return self.data.shape[0]
     
-def Cheng_Dataloader(batch_size, mode):
-    dataset = Cheng_Dataset()
+def DiyDataloader(batch_size, mode, path):
+    dataset = DiyDataset(mode, path)
     dataloader = DataLoader(
         dataset,
         batch_size,

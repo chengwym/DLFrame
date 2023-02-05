@@ -7,6 +7,10 @@ import random
 device = torch.device('cuda')
 seed = 3407
 
+def convert_multiple_gpu(model):
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
+        
 def to_numpy(tensor: Tensor):
     return tensor.to('cpu').detach().numpy()
 

@@ -1,9 +1,12 @@
 import torch
+from torch import nn, optim
 import matplotlib.pyplot as plt
 import hyperopt
-from hyperopt import hp, fmin, tpe, Trials
+from hyperopt import hp, fmin, tpe, Trials, STATUS_OK
 
 import dlframe.infrastructure.pytorch_utils as ptu
+from dlframe.infrastructure.utils import plot_hyper_dict, dict_to_str
+from dlframe.model.mlp import MLP
 
 def check_loss(dataloader, model, criterion):
     model.eval()
@@ -27,7 +30,8 @@ def check_acc(dataloader, model):
             target = target.to(ptu.device)
             output = model(input)
             # TODO define the evaluation method
-            
+            num_correct += (torch.abs(target - output) < 0.1).sum()
+            num_count += target.shape[0]
             ###################################
         acc = float(num_correct) / float(num_count)
     return acc
@@ -38,6 +42,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
     eval_loss_list = []
     train_acc_list = []
     train_loss_list = []
+    print('start training.............')
     for epoch in range(epoches):
         train_loss = 0
         for input, target in train_dataloader:
@@ -49,6 +54,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
+        print(f'epoch[{epoch}]: loss={train_loss:.6f}')
         eval_loss = check_loss(eval_dataloader, model, criterion)
         eval_acc = check_acc(eval_dataloader, model)
         train_acc = check_acc(train_dataloader, model)
@@ -77,18 +83,33 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
         
     if savemodel:
         torch.save(model.state_dict(), f'{log_dir}/model.pt')
-        
-def fit(params):
-    model = 
-    criterion = 
-    optimizer = 
-    train()
 
-def search_hyperparameter(work_dir):
+def search_hyperparameter(criterion, train_dataloader, eval_dataloader, params, work_dir):
     
     space = {
         
     }
+    
+    def fit(p):
+        lr = p.get('learning_rate', params['learning_rate'])
+        beta1 = p.get('beta1', params['beta1'])
+        eps = p.get('eps', params['eps'])
+        beta2 = p.get('beta2', params['beta2'])
+        weight_decay = p.get('weight_decay', params['weight_decay'])
+        
+        model = MLP([93, 64, 32, 16, 1], 5)
+
+        optimizer = optim.Adam(
+            model.parameters(),
+            lr=lr,
+            eps=eps,
+            betas=(beta1, beta2),
+            weight_decay=weight_decay
+        )
+        
+        train(params['epoches'], train_dataloader, eval_dataloader, model, optimizer, criterion, f'{work_dir}'/{dict_to_str(p)})
+        
+        return {'loss': check_loss(eval_dataloader, model, criterion), 'status': STATUS_OK}
     
     trials = Trials()
     
@@ -99,3 +120,5 @@ def search_hyperparameter(work_dir):
         max_evals=100,
         trials=trials
     )
+    
+    plot_hyper_dict(trials.vals, trials.losses())
