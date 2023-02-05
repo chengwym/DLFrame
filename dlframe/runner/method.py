@@ -1,3 +1,4 @@
+import os
 import torch
 from torch import nn, optim
 import matplotlib.pyplot as plt
@@ -37,6 +38,8 @@ def check_acc(dataloader, model):
     return acc
 
 def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterion, log_dir, plot=True, savemodel=False):
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
     model.train()
     eval_acc_list = []
     eval_loss_list = []
