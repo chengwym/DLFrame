@@ -42,7 +42,7 @@ def train(epoches, train_dataloader, eval_dataloader, model, optimizer, criterio
     eval_loss_list = []
     train_acc_list = []
     train_loss_list = []
-    print('start training.............')
+    print('.............start training.............')
     for epoch in range(epoches):
         train_loss = 0
         for input, target in train_dataloader:
