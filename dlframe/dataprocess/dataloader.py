@@ -1,5 +1,7 @@
 from torch.utils.data import DataLoader, Dataset
 
+import dlframe.dataprocess.read as rd
+
 class DiyDataset(Dataset):
     def __init__(
         self,
@@ -8,11 +10,11 @@ class DiyDataset(Dataset):
     ):
         self.mode = mode
         if mode=='test':
-            pass
+            self.data = rd.read_csv(path, mode)
         elif mode=='train':
-            pass
+            self.data, self.target = rd.read_csv(path, mode)
         elif mode=='eval':
-            pass
+            self.data, self.target = rd.read_csv(path, mode)
         else:
             raise ValueError(f'The mode {mode} is uncorrect. It should be test, train, or eval')
     
