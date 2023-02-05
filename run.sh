@@ -1,3 +1,3 @@
-mode=eval
+mode=train
 
-python runner/${mode}.py
+python dlframe/runner/${mode}.py
