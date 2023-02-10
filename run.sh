@@ -1,5 +1,5 @@
-mode=trian
-method=dl
+mode=train
+method=ml
 
 batch_size=1024
 learning_rate=2e-3
@@ -8,7 +8,7 @@ beta1=0.99
 beta2=0.999
 weight_decay=1e-6
 eps=1e-8
-work_dir=./log/lr4
+work_dir=./log/mltest
 max_evals=20
 
 eta=0.1
@@ -16,10 +16,11 @@ min_child_weight=1
 gamma=0
 max_depth=6
 lambda=0
-alpha=0
-num_boost_round=100
+alpha=0 
+num_boost_round=200
+eval_metric=rmse
 
-if [ ${method} = "dl"]
+if [ ${method} = "dl" ]
 then
     python dlframe/runner/${method}/${mode}.py \
         --batch_size ${batch_size}\
@@ -31,7 +32,7 @@ then
         --eps ${eps}\
         --work_dir ${work_dir}\
         --max_evals ${max_evals}
-elif [ ${method} = "ml"]
+elif [ ${method} = "ml" ]
 then
     python dlframe/runner/${method}/${mode}.py \
         --eta ${eta}\
@@ -41,5 +42,6 @@ then
         --lambda ${lambda}\
         --alpha ${alpha}\
         --num_boost_round ${num_boost_round}\
+        --eval_metric ${eval_metric}
 
 fi

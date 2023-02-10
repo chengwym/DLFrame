@@ -2,7 +2,7 @@ import argparse
 import torch.nn as nn
 import torch.optim as optim
 
-from dlframe.dataprocess.dataloader import *
+from dlframe.dataprocess.dataloader import DiyDataloader
 from dlframe.runner.dl.method import train, check_acc, check_loss, search_hyperparameter
 from dlframe.model.mlp import MLP
 import dlframe.infrastructure.pytorch_utils as ptu
