@@ -18,9 +18,8 @@ def main():
     args = parser.parse_args()
     params = vars(args)
     
-    feature_train, target_train = rd.read_csv('./', 'train')
-    feature_eval, target_eval = rd.read_csv('./', 'eval')
-    feature_test = rd.read_csv('./', 'test')
+    feature_train, target_train = rd.read_parquet('', '20160101', '20181231')
+    feature_eval, target_eval = rd.read_csv('./', '20190101', '20191231')
     
     train_dmatrix = tru.xgb_dmatrix(feature_train, target_train)
     eval_dmatrix = tru.xgb_dmatrix(feature_eval, target_eval)
